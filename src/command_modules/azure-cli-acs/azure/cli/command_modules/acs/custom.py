@@ -410,7 +410,7 @@ def acs_create(resource_group_name, deployment_name, name, ssh_key_value, dns_na
                agent_storage_profile="",
                orchestrator_type="DCOS", service_principal=None, client_secret=None, tags=None,
                windows=False, admin_password="", generate_ssh_keys=False,  # pylint: disable=unused-argument
-               validate=False, no_wait=False):
+               validate=False, no_wait=False, get_credentials=True):
     """Create a new Acs.
     :param resource_group_name: The name of the resource group. The name
      is case insensitive.
@@ -487,6 +487,9 @@ def acs_create(resource_group_name, deployment_name, name, ssh_key_value, dns_na
     :type admin_password: str
     :param bool raw: returns the direct response alongside the
      deserialized response
+    :type get_credentials: bool
+    :param get_credentials: If true, credentials for the cluster will be downloaded after cluster create.
+    Only available if --no-wait=false
     :rtype:
     :class:`AzureOperationPoller<msrestazure.azure_operation.AzureOperationPoller>`
      instance that returns :class:`DeploymentExtended
@@ -551,6 +554,14 @@ def acs_create(resource_group_name, deployment_name, name, ssh_key_value, dns_na
             if not client_secret:
                 raise CLIError('--client-secret is required if --service-principal is specified')
             _validate_service_principal(client, service_principal)
+
+        return _create_kubernetes(resource_group_name, deployment_name, dns_name_prefix, name,
+                                  ssh_key_value, admin_username=admin_username,
+                                  agent_count=agent_count, agent_vm_size=agent_vm_size,
+                                  location=location, service_principal=service_principal,
+                                  client_secret=client_secret, master_count=master_count,
+                                  windows=windows, admin_password=admin_password,
+                                  validate=validate, no_wait=no_wait, get_creds=get_creds, tags=tags)
 
     elif windows:
         raise CLIError('--windows is only supported for Kubernetes clusters')
@@ -623,7 +634,10 @@ def _create(resource_group_name, deployment_name, dns_name_prefix, name, ssh_key
             agent_profiles=None, agent_count=3, agent_vm_size="Standard_D2_v2", agent_osdisk_size=0,
             agent_vnet_subnet_id="", agent_ports=None, agent_storage_profile="",
             location=None, service_principal=None, client_secret=None,
-            windows=False, admin_password='', validate=False, no_wait=False, tags=None):
+            windows=False, admin_password='', validate=False, no_wait=False, tags=None,
+            get_creds=True):
+    if get_creds and no_wait:
+        logger.warning('--get-credentials is ignored when --no-wait is true.')
     if not location:
         location = '[resourceGroup().location]'
     windows_profile = None
@@ -736,6 +750,13 @@ def _create(resource_group_name, deployment_name, dns_name_prefix, name, ssh_key
     if windows_profile is not None:
         properties["windowsProfile"] = windows_profile
 
+    if get_creds:
+        callback = lambda argv: k8s_get_credentials(name, resource_group_name)
+    else:
+        callback = None
+    return _invoke_deployment(resource_group_name, deployment_name, template, params, validate, no_wait, callback=callback)
+
+
     resource = {
         "apiVersion": api_version,
         "location": location,
@@ -774,7 +795,7 @@ def _create(resource_group_name, deployment_name, dns_name_prefix, name, ssh_key
     return _invoke_deployment(resource_group_name, deployment_name, template, params, validate, no_wait)
 
 
-def _invoke_deployment(resource_group_name, deployment_name, template, parameters, validate, no_wait):
+def _invoke_deployment(resource_group_name, deployment_name, template, parameters, validate, no_wait, callback=None):
     from azure.mgmt.resource.resources import ResourceManagementClient
     from azure.mgmt.resource.resources.models import DeploymentProperties
 
@@ -785,8 +806,14 @@ def _invoke_deployment(resource_group_name, deployment_name, template, parameter
         logger.info(json.dumps(template, indent=2))
         logger.info('==== END TEMPLATE ====')
         return smc.validate(resource_group_name, deployment_name, properties)
-    return smc.create_or_update(resource_group_name, deployment_name, properties, raw=no_wait)
-
+    result = smc.create_or_update(resource_group_name, deployment_name, properties, raw=no_wait)
+    if callback is not None:
+        try:
+            result.add_done_callback(callback)
+        except ValueError:
+            # Request has already completed.
+            callback(result)
+    return result
 
 def k8s_get_credentials(name, resource_group_name,
                         path=os.path.join(os.path.expanduser('~'), '.kube', 'config'),
@@ -801,6 +828,7 @@ def k8s_get_credentials(name, resource_group_name,
     :param ssh_key_file: Path to an SSH key file to use
     :type ssh_key_file: str
     """
+    logger.warn('Setting kubernetes default cluster to %', name)
     acs_info = _get_acs_info(name, resource_group_name)
     _k8s_get_credentials_internal(name, acs_info, path, ssh_key_file)
 

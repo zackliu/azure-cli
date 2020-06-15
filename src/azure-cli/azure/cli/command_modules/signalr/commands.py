@@ -2,13 +2,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+# pylint: disable=line-too-long
 
 from azure.cli.core.commands import CliCommandType
 from azure.cli.core.util import empty_on_404
 
 from ._client_factory import cf_signalr
 from azure.cli.core import AzCommandsLoader
+
 
 def load_command_table(self: AzCommandsLoader, _):
 
@@ -34,6 +35,11 @@ def load_command_table(self: AzCommandsLoader, _):
 
     signalr_private_endpoint_utils = CliCommandType(
         operations_tmpl='azure.cli.command_modules.signalr.private_endpoint#{}',
+        client_factory=cf_signalr
+    )
+
+    signalr_upstream_utils = CliCommandType(
+        operations_tmpl='azure.cli.command_modules.signalr.upstream#{}',
         client_factory=cf_signalr
     )
 
@@ -72,3 +78,7 @@ def load_command_table(self: AzCommandsLoader, _):
     with self.command_group('signalr private-link-resource', signalr_private_endpoint_utils) as g:
         from azure.cli.core.commands.transform import gen_dict_to_list_transform
         g.command('list', 'list_by_signalr', transform=gen_dict_to_list_transform(key='value'))
+
+    with self.command_group('signalr upstream', signalr_upstream_utils) as g:
+        g.command('list', 'signalr_upstream_list')
+        g.command('update', 'signalr_upstream_update')

@@ -70,7 +70,7 @@ def load_arguments(self: AzCommandsLoader, _):
             c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network. `--connection-name` and `--public-network` are mutually exclusive.')
             c.argument('allow', nargs='*', help='The allowed virtual network rule.')
             c.argument('deny', nargs='*', help='The denied virtual network rule.')
-    
+
     with self.argument_context('signalr network-rule remove') as c:
         c.argument('connection_name', help='Name of private endpoint connection.')
 
@@ -79,10 +79,8 @@ def load_arguments(self: AzCommandsLoader, _):
         with self.argument_context('signalr private-endpoint-connection {}'.format(item)) as c:
             c.argument('private_endpoint_connection_name', options_list=['--name', '-n'], required=False,
                        help='The name of the private endpoint connection associated with the SignalR Service.')
-            c.argument('connection_id', options_list=['--id'],
-                    help='The ID of the private endpoint connection associated with the SignalR Service.')
+            c.argument('connection_id', options_list=['--id'], help='The ID of the private endpoint connection associated with the SignalR Service.')
 
-    
-
-    
-
+    # Upstream Settings
+    with self.argument_context('signalr upstream update') as c:
+        c.argument('template', action= )

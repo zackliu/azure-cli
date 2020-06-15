@@ -4,8 +4,11 @@
 # --------------------------------------------------------------------------------------------
 
 
-from azure.mgmt.signalr.models import (ResourceSku, SignalRCreateOrUpdateProperties, SignalRCreateParameters,
-                                       SignalRFeature, SignalRCorsSettings, SignalRUpdateParameters)
+from azure.mgmt.signalr.models import (ResourceSku,
+    SignalRCreateOrUpdateProperties,
+    SignalRFeature,
+    SignalRCorsSettings,
+    SignalRResource)
 
 
 def signalr_create(client, signalr_name, resource_group_name,
@@ -17,10 +20,10 @@ def signalr_create(client, signalr_name, resource_group_name,
     properties = SignalRCreateOrUpdateProperties(host_name_prefix=signalr_name,
                                                  features=[service_mode_feature], cors=cors_setting)
 
-    parameter = SignalRCreateParameters(tags=tags,
-                                        sku=sku,
-                                        properties=properties,
-                                        location=location)
+    parameter = SignalRResource(tags=tags,
+                                sku=sku,
+                                properties=properties,
+                                location=location)
 
     return client.create_or_update(resource_group_name, signalr_name, parameter)
 
@@ -44,7 +47,7 @@ def signalr_restart(client, signalr_name, resource_group_name):
 
 
 def signalr_update_get():
-    return SignalRUpdateParameters()
+    return SignalRResource()
 
 
 def signalr_update_set(client, signalr_name, resource_group_name, parameters):

@@ -5,18 +5,16 @@
 # --------------------------------------------------------------------------------------------
 
 import argparse
-
+from azure.mgmt.signalr.models import UpstreamTemplate
+from knack.util import CLIError
 
 class UpstreamTemplateAddAction(argparse._AppendAction):
-    def __call__(self, parser, namespace, values, option_string=None):
-        try:
-            FooRule = namespace._cmd.get_models('FooRule')
-            name, metric, operation, value = values.split()
-            return FooRule(
-                name=name,
-                metric=metric,
-                operation=operation,
-                value=value
-            )
-        except ValueError:
-            raise CLIError('usage error: {} NAME METRIC OPERATION VALUE'.format(option_string))
+    def __call__(self, parser, namespace , values, option_string=None):
+        kwargs = {}
+        for item in values.split():
+            try:
+                key, value = item.split('=', 1)
+                kwargs[key] = value
+            except ValueError:
+                raise CLIError('usage error: {} KEY=VALUE [KEY=VALUE ...]'.format(option_string))
+        return UpstreamTemplate(**kwargs)

@@ -15,13 +15,15 @@ from azure.cli.core.commands.parameters import (
     get_enum_type,
     get_three_state_flag
 )
-
-
+from ._actions import (
+    UpstreamTemplateAddAction
+)
 from ._constants import (
     SIGNALR_RESOURCE_TYPE,
     SIGNALR_KEY_TYPE,
     SIGNALR_SERVICE_MODE_TYPE
 )
+
 from azure.cli.core import AzCommandsLoader
 
 logger = get_logger(__name__)
@@ -83,4 +85,4 @@ def load_arguments(self: AzCommandsLoader, _):
 
     # Upstream Settings
     with self.argument_context('signalr upstream update') as c:
-        c.argument('template', action= )
+        c.argument('template', action=UpstreamTemplateAddAction, nargs='+')

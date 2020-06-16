@@ -122,3 +122,25 @@ examples:
     text: >
         az signalr update -n MySignalR -g MyResourceGroup --service-mode Serverless
 """
+
+helps['signalr upstream list'] = """
+type: command
+short-summary: List upstream settings of an existing SignalR Service.
+"""
+
+helps['signalr upstream update'] = """
+type: command
+short-summary: Update order sensitive upstream settings for an existing SignalR Service.
+examples:
+  - name: Update two upstream settings to handle messages and connections separately.
+    text: >
+        az signalr upstream update -n MySignalR -g MyResourceGroup --template url-template="http://host-connections.com" category-pattern="connections" --template url-template="http://host-connections.com" category-pattern="messages"
+  - name: Update one upstream setting to handle a specific event in a specific hub.
+    text: >
+        az signalr upstream update -n MySignalR -g MyResourceGroup --template url-template="http://host.com/{hub}/{event}/{category}" category-pattern="messages" event-pattern="broadcast" hub-pattern="chat"
+"""
+
+helps['signalr upstream clear'] = """
+type: command
+short-summary: List upstream settings of an existing SignalR Service.
+"""

@@ -4,11 +4,12 @@
 # --------------------------------------------------------------------------------------------
 
 
-from azure.mgmt.signalr.models import (ResourceSku,
-    SignalRCreateOrUpdateProperties,
+from azure.mgmt.signalr.models import (
+    ResourceSku,
     SignalRFeature,
     SignalRCorsSettings,
-    SignalRResource)
+    SignalRResource
+    )
 
 
 def signalr_create(client, signalr_name, resource_group_name,
@@ -17,12 +18,11 @@ def signalr_create(client, signalr_name, resource_group_name,
     service_mode_feature = SignalRFeature(value=service_mode)
     cors_setting = SignalRCorsSettings(allowed_origins=allowed_origins)
 
-    properties = SignalRCreateOrUpdateProperties(host_name_prefix=signalr_name,
-                                                 features=[service_mode_feature], cors=cors_setting)
-
     parameter = SignalRResource(tags=tags,
                                 sku=sku,
-                                properties=properties,
+                                host_name_prefix=signalr_name,
+                                features=[service_mode_feature],
+                                cors=cors_setting,
                                 location=location)
 
     return client.create_or_update(resource_group_name, signalr_name, parameter)
@@ -61,14 +61,10 @@ def signalr_update_custom(instance, sku=None, unit_count=1, tags=None, service_m
     if tags is not None:
         instance.tags = tags
 
-    properties = SignalRCreateOrUpdateProperties()
-
     if service_mode is not None:
-        properties.features = [SignalRFeature(value=service_mode)]
+        instance.features = [SignalRFeature(value=service_mode)]
 
     if allowed_origins is not None:
-        properties.cors = SignalRCorsSettings(allowed_origins=allowed_origins)
-
-    instance.properties = properties
+        instance.cors = SignalRCorsSettings(allowed_origins=allowed_origins)
 
     return instance

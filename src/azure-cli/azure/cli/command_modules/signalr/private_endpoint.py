@@ -4,17 +4,42 @@
 # --------------------------------------------------------------------------------------------
 # pylint: disable=line-too-long
 
-def approve_private_endpoint_connection(client, resource_group_name, signalr_name):
-    pass
+from azure.mgmt.signalr.models import (
+    PrivateLinkServiceConnectionState
+    )
 
-def reject_private_endpoint_connection(client, resource_group_name, signalr_name):
-    pass
 
-def delete(client, resource_group_name, signalr_name):
-    pass
+def approve_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, description=None):
+    return _update_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, True, description)
 
-def get(client, resource_group_name, signalr_name):
-    pass
+
+def reject_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, description=None):
+    return _update_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, False, description)
+
+
+def delete_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, description=None):
+    return client.delete(private_endpoint_connection_name, resource_group_name, signalr_name)
+
+
+def get_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, description=None):
+    return client.get(private_endpoint_connection_name, resource_group_name, signalr_name)
+
 
 def list_by_signalr(client, resource_group_name, signalr_name):
-    pass
+    return client.list(resource_group_name, signalr_name)
+
+
+def _update_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, is_approve_operation, description):
+    private_endpoint_connection = client.get(private_endpoint_connection, resource_group_namem, signalr_name)
+
+    old_status = private_endpoint_connection.private_link_service_connection_state.status
+    new_status = PrivateLinkServiceConnectionState(status='Approved') if is_approve_operation else PrivateLinkServiceConnectionState(status='Rejected')
+
+    private_endpoint_connection.private_link_service_connection_state.status = new_status
+    private_endpoint_connection.private_link_service_connection_state.description = description
+    
+    return client.update(private_endpoint_connection_name, resource_group_name, signalr_name,
+                            private_endpoint="",
+                            private_link_service_connection_state=new_status
+                            )
+

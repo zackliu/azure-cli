@@ -7,7 +7,11 @@
 from azure.cli.core.commands import CliCommandType
 from azure.cli.core.util import empty_on_404
 
-from ._client_factory import cf_signalr
+from ._client_factory import (
+    cf_signalr,
+    cf_private_endpoint_connections,
+    cf_private_link_resources
+    )
 from azure.cli.core import AzCommandsLoader
 
 
@@ -35,7 +39,12 @@ def load_command_table(self: AzCommandsLoader, _):
 
     signalr_private_endpoint_utils = CliCommandType(
         operations_tmpl='azure.cli.command_modules.signalr.private_endpoint#{}',
-        client_factory=cf_signalr
+        client_factory=cf_private_endpoint_connections
+    )
+
+    signalr_private_link_resources_utils = CliCommandType(
+        operations_tmpl='azure.cli.command_modules.signalr.private_endpoint#{}',
+        client_factory=cf_private_link_resources
     )
 
     signalr_upstream_utils = CliCommandType(
@@ -72,13 +81,14 @@ def load_command_table(self: AzCommandsLoader, _):
         from ._validators import validate_private_endpoint_connection_id
         g.command('approve', 'approve_private_endpoint_connection', validator=validate_private_endpoint_connection_id)
         g.command('reject', 'reject_private_endpoint_connection', validator=validate_private_endpoint_connection_id)
-        g.command('delete', 'delete', validator=validate_private_endpoint_connection_id)
-        g.show_command('show', 'get', validator=validate_private_endpoint_connection_id)
+        g.command('delete', 'delete_private_endpoint_connection', validator=validate_private_endpoint_connection_id)
+        g.show_command('show', 'get_private_endpoint_connection', validator=validate_private_endpoint_connection_id)
 
-    with self.command_group('signalr private-link-resource', signalr_private_endpoint_utils) as g:
+    with self.command_group('signalr private-link-resource', signalr_private_link_resources_utils) as g:
         from azure.cli.core.commands.transform import gen_dict_to_list_transform
         g.command('list', 'list_by_signalr', transform=gen_dict_to_list_transform(key='value'))
 
     with self.command_group('signalr upstream', signalr_upstream_utils) as g:
         g.command('list', 'signalr_upstream_list')
         g.command('update', 'signalr_upstream_update')
+        g.command('clear', 'signalr_upstream_clear')

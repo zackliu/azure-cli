@@ -30,16 +30,11 @@ def list_by_signalr(client, resource_group_name, signalr_name):
 
 
 def _update_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, is_approve_operation, description):
-    private_endpoint_connection = client.get(private_endpoint_connection, resource_group_namem, signalr_name)
+    private_endpoint_connection = client.get(private_endpoint_connection, resource_group_name, signalr_name)
 
-    old_status = private_endpoint_connection.private_link_service_connection_state.status
-    new_status = PrivateLinkServiceConnectionState(status='Approved') if is_approve_operation else PrivateLinkServiceConnectionState(status='Rejected')
-
-    private_endpoint_connection.private_link_service_connection_state.status = new_status
-    private_endpoint_connection.private_link_service_connection_state.description = description
+    new_status = PrivateLinkServiceConnectionState(status='Approved', description=description) if is_approve_operation else PrivateLinkServiceConnectionState(status='Rejected', description=description)
     
     return client.update(private_endpoint_connection_name, resource_group_name, signalr_name,
-                            private_endpoint="",
-                            private_link_service_connection_state=new_status
-                            )
+                            private_endpoint=private_endpoint_connection.private_endpoint,
+                            private_link_service_connection_state=new_status)
 

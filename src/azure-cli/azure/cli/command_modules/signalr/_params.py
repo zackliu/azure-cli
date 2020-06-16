@@ -68,10 +68,12 @@ def load_arguments(self: AzCommandsLoader, _):
     # Network Rule
     for scope in ['signalr network-rule add', 'signalr network-rule update']:
         with self.argument_context(scope) as c:
-            c.argument('connection_name', help='Name of private endpoint connection. `--connection-name` and `--public-network` are mutually exclusive.')
-            c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network. `--connection-name` and `--public-network` are mutually exclusive.')
+            c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network.')
             c.argument('allow', nargs='*', help='The allowed virtual network rule.')
             c.argument('deny', nargs='*', help='The denied virtual network rule.')
+    with self.argument_context('signalr network-rule add') as c:
+        c.argument('connection_name', help='Name of private endpoint connection. `--connection-name` and `--public-network` are mutually exclusive.', required=False)
+        c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network. `--connection-name` and `--public-network` are mutually exclusive.', required=False)
 
     with self.argument_context('signalr network-rule remove') as c:
         c.argument('connection_name', help='Name of private endpoint connection.')

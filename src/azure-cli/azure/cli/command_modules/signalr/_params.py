@@ -84,8 +84,8 @@ def load_arguments(self: AzCommandsLoader, _):
             c.extra('connection_id', options_list=['--id'], help='The ID of the private endpoint connection associated with the SignalR Service.')
             c.argument('resource_group_name', arg_type=resource_group_name_type, required=False)
             c.argument('signalr_name', options_list=['--name', '-n'],
-                   completer=get_resource_name_completion_list(SIGNALR_RESOURCE_TYPE),
-                   help='Name of signalr service.', required=False)
+                       completer=get_resource_name_completion_list(SIGNALR_RESOURCE_TYPE),
+                       help='Name of signalr service.', required=False)
             c.argument('description', help='Comments for {} operation.'.format(item))
 
     # Upstream Settings

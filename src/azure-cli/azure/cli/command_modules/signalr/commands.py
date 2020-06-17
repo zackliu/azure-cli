@@ -10,8 +10,7 @@ from azure.cli.core.util import empty_on_404
 from ._client_factory import (
     cf_signalr,
     cf_private_endpoint_connections,
-    cf_private_link_resources
-    )
+    cf_private_link_resources)
 from azure.cli.core import AzCommandsLoader
 
 
@@ -74,7 +73,7 @@ def load_command_table(self: AzCommandsLoader, _):
     with self.command_group('signalr network-rule', signalr_network_utils) as g:
         g.command('list', 'list_network_rules')
         g.command('update', 'update_network_rules')
-    
+
     with self.command_group('signalr private-endpoint-connection', signalr_private_endpoint_utils) as g:
         from ._validators import validate_private_endpoint_connection_id
         g.command('approve', 'approve_private_endpoint_connection', validator=validate_private_endpoint_connection_id)

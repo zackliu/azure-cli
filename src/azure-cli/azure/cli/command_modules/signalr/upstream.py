@@ -5,10 +5,8 @@
 # pylint: disable=line-too-long
 
 from azure.mgmt.signalr.models import (
-    SignalRCorsSettings,
     SignalRResource,
-    ServerlessUpstreamSettings
-    )
+    ServerlessUpstreamSettings)
 
 
 def signalr_upstream_list(client, resource_group_name, signalr_name):

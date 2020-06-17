@@ -6,8 +6,7 @@
 
 from azure.mgmt.signalr.models import (
     SignalRCorsSettings,
-    SignalRResource
-    )
+    SignalRResource)
 
 
 def signalr_cors_list(client, resource_group_name, signalr_name):

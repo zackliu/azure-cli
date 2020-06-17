@@ -2,15 +2,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
-
+# pylint: disable=line-too-long
 
 from azure.mgmt.signalr.models import (
     ResourceSku,
     SignalRFeature,
     SignalRCorsSettings,
     SignalRResource,
-    SignalRNetworkACLs
-    )
+    SignalRNetworkACLs)
 
 
 def signalr_create(client, signalr_name, resource_group_name,

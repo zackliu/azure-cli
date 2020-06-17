@@ -7,7 +7,7 @@
 from knack.util import CLIError
 
 
-def validate_private_endpoint_connection_id(cmd, namespace):
+def validate_private_endpoint_connection_id(namespace):
     if namespace.connection_id:
         from azure.cli.core.util import parse_proxy_resource_id
         result = parse_proxy_resource_id(namespace.connection_id)

@@ -5,11 +5,10 @@
 # pylint: disable=line-too-long
 
 from azure.mgmt.signalr.models import (
-    PrivateEndpointACL,
-    SignalRResource
-    )
+    SignalRResource)
 
 
+# pylint: disable=dangerous-default-value
 def update_network_rules(client, signalr_name, resource_group_name, public_network, connection_name=[], allow=[], deny=[]):
     resource = client.get(resource_group_name, signalr_name)
     network_acl = resource.network_ac_ls

@@ -72,8 +72,6 @@ def load_command_table(self: AzCommandsLoader, _):
         g.command('list', 'signalr_cors_list')
 
     with self.command_group('signalr network-rule', signalr_network_utils) as g:
-        g.command('add', 'add_network_rule')
-        g.command('remove', 'remove_network_rule')
         g.command('list', 'list_network_rules')
         g.command('update', 'update_network_rules')
     

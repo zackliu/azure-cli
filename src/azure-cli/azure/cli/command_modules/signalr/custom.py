@@ -8,14 +8,15 @@ from azure.mgmt.signalr.models import (
     ResourceSku,
     SignalRFeature,
     SignalRCorsSettings,
-    SignalRResource
+    SignalRResource,
+    SignalRNetworkACLs
     )
 
 
 def signalr_create(client, signalr_name, resource_group_name,
-                   sku, unit_count=1, location=None, tags=None, service_mode='Default', allowed_origins=None):
+                   sku, unit_count=1, location=None, tags=None, service_mode='Default', allowed_origins=None, default_action="Allow"):
     sku = ResourceSku(name=sku, capacity=unit_count)
-    service_mode_feature = SignalRFeature(value=service_mode)
+    service_mode_feature = SignalRFeature(flag="ServiceMode", value=service_mode)
     cors_setting = SignalRCorsSettings(allowed_origins=allowed_origins)
 
     parameter = SignalRResource(tags=tags,
@@ -23,7 +24,8 @@ def signalr_create(client, signalr_name, resource_group_name,
                                 host_name_prefix=signalr_name,
                                 features=[service_mode_feature],
                                 cors=cors_setting,
-                                location=location)
+                                location=location,
+                                network_ac_ls=SignalRNetworkACLs(default_action=default_action))
 
     return client.create_or_update(resource_group_name, signalr_name, parameter)
 
@@ -54,7 +56,7 @@ def signalr_update_set(client, signalr_name, resource_group_name, parameters):
     return client.update(resource_group_name, signalr_name, parameters)
 
 
-def signalr_update_custom(instance, sku=None, unit_count=1, tags=None, service_mode=None, allowed_origins=None):
+def signalr_update_custom(instance, sku=None, unit_count=1, tags=None, service_mode=None, allowed_origins=None, default_action=None):
     if sku is not None:
         instance.sku = ResourceSku(name=sku, capacity=unit_count)
 
@@ -62,9 +64,12 @@ def signalr_update_custom(instance, sku=None, unit_count=1, tags=None, service_m
         instance.tags = tags
 
     if service_mode is not None:
-        instance.features = [SignalRFeature(value=service_mode)]
+        instance.features = [SignalRFeature(flag="ServiceMode", value=service_mode)]
 
     if allowed_origins is not None:
         instance.cors = SignalRCorsSettings(allowed_origins=allowed_origins)
+
+    if default_action is not None:
+        instance.network_ac_ls = SignalRNetworkACLs(default_action=default_action)
 
     return instance

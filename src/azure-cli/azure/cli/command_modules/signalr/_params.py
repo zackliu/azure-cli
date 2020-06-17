@@ -23,6 +23,7 @@ from ._constants import (
     SIGNALR_KEY_TYPE,
     SIGNALR_SERVICE_MODE_TYPE
 )
+from azure.mgmt.signalr.models import (SignalRRequestType)
 
 from azure.cli.core import AzCommandsLoader
 
@@ -54,7 +55,7 @@ def load_arguments(self: AzCommandsLoader, _):
 
     for scope in ['signalr create', 'signalr update']:
         with self.argument_context(scope, arg_group='Network Rule') as c:
-            c.argument('default_action', arg_type=get_enum_type(['Allow', 'Deny']), help='Default action to apply when no rule matches.')
+            c.argument('default_action', arg_type=get_enum_type(['Allow', 'Deny']), help='Default action to apply when no rule matches.', required=False)
 
     with self.argument_context('signalr key renew') as c:
         c.argument('key_type', help='The name of access key to regenerate', choices=SIGNALR_KEY_TYPE)
@@ -66,14 +67,11 @@ def load_arguments(self: AzCommandsLoader, _):
         c.argument('allowed_origins', options_list=['--allowed-origins', '-a'], nargs='*', help='space separated origins that should be allowed to make cross-origin calls (for example: http://example.com:12345). To allow all, use "*"')
 
     # Network Rule
-    for scope in ['signalr network-rule add', 'signalr network-rule update']:
-        with self.argument_context(scope) as c:
-            c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network.')
-            c.argument('allow', nargs='*', help='The allowed virtual network rule.')
-            c.argument('deny', nargs='*', help='The denied virtual network rule.')
-    with self.argument_context('signalr network-rule add') as c:
-        c.argument('connection_name', help='Name of private endpoint connection. `--connection-name` and `--public-network` are mutually exclusive.', required=False)
-        c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network. `--connection-name` and `--public-network` are mutually exclusive.', required=False)
+    with self.argument_context('signalr network-rule update') as c:
+        c.argument('connection_name', nargs='*', help='Space-separeted list of private endpoint connection name.', required=False)
+        c.argument('public_network', arg_type=get_three_state_flag(), help='The rules for public network.', required=False)
+        c.argument('allow', nargs='*', help='The allowed virtual network rule. Space-separeted list of scope to assign. Allowed values: ClientConnection, ServerConnection, RESTAPI', type=SignalRRequestType, required=False)
+        c.argument('deny', nargs='*', help='The denied virtual network rule. Space-separeted list of scope to assign. Allowed values: ClientConnection, ServerConnection, RESTAPI', type=SignalRRequestType, required=False)
 
     with self.argument_context('signalr network-rule remove') as c:
         c.argument('connection_name', help='Name of private endpoint connection.')
@@ -81,7 +79,7 @@ def load_arguments(self: AzCommandsLoader, _):
     # Private Endpoint
     for item in ['approve', 'reject', 'show', 'delete']:
         with self.argument_context('signalr private-endpoint-connection {}'.format(item)) as c:
-            c.argument('private_endpoint_connection_name', options_list=['--name', '-n'], required=False,
+            c.argument('private_endpoint_connection_name', required=False,
                        help='The name of the private endpoint connection associated with the SignalR Service.')
             c.extra('connection_id', options_list=['--id'], help='The ID of the private endpoint connection associated with the SignalR Service.')
             c.argument('resource_group_name', arg_type=resource_group_name_type, required=False)

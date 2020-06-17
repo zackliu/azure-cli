@@ -5,7 +5,9 @@
 # pylint: disable=line-too-long
 
 from azure.mgmt.signalr.models import (
-    PrivateLinkServiceConnectionState
+    PrivateLinkServiceConnectionState,
+    PrivateLinkServiceConnectionStatus,
+    ErrorResponseException
     )
 
 
@@ -30,11 +32,20 @@ def list_by_signalr(client, resource_group_name, signalr_name):
 
 
 def _update_private_endpoint_connection(client, resource_group_name, signalr_name, private_endpoint_connection_name, is_approve_operation, description):
-    private_endpoint_connection = client.get(private_endpoint_connection, resource_group_name, signalr_name)
+    private_endpoint_connection = client.get(private_endpoint_connection_name, resource_group_name, signalr_name)
 
-    new_status = PrivateLinkServiceConnectionState(status='Approved', description=description) if is_approve_operation else PrivateLinkServiceConnectionState(status='Rejected', description=description)
+    old_status = private_endpoint_connection.private_link_service_connection_state.status
+    new_status = PrivateLinkServiceConnectionStatus.approved if is_approve_operation else PrivateLinkServiceConnectionStatus.rejected
     
-    return client.update(private_endpoint_connection_name, resource_group_name, signalr_name,
+    try:
+        return client.update(private_endpoint_connection_name, resource_group_name, signalr_name,
                             private_endpoint=private_endpoint_connection.private_endpoint,
-                            private_link_service_connection_state=new_status)
-
+                            private_link_service_connection_state=PrivateLinkServiceConnectionState(status=new_status, description=description))
+    except ErrorResponseException as ex:
+        if ex.response.status_code == 400:
+            from msrestazure.azure_exceptions import CloudError
+            if (new_status == old_status):
+                raise CloudError(ex.response, "You can not set {} status on a private endpoint connection which status is already {}.".format(new_status, new_status))
+            elif (new_status == "Approved" and old_status == "Rejected"):
+                raise CloudError(ex.response, "You cannot approve the connection request after rejection. Please create a new connection for approval.")
+        raise ex

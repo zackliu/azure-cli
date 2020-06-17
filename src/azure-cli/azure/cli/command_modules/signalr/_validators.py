@@ -16,6 +16,6 @@ def validate_private_endpoint_connection_id(cmd, namespace):
         namespace.private_endpoint_connection_name = result['child_name_1']
 
     if not all([namespace.signalr_name, namespace.resource_group_name, namespace.private_endpoint_connection_name]):
-        raise CLIError('incorrect usage: [--id ID | --name NAME --account-name NAME]')
+        raise CLIError('incorrect usage: [--id ID | --name NAME --resource-group NAME --private-endpoint-connection-name NAME ]')
 
     del namespace.connection_id

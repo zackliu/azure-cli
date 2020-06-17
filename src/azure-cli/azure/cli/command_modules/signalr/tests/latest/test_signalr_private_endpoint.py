@@ -54,9 +54,23 @@ class AzureSignalRServicePrivateEndpointScenarioTest(ScenarioTest):
             'private_endpoint_connection_id': p_e_c[0]['id']
         })
 
-        # Test update network rules
+        # Test update public network rules
         self.cmd('signalr network-rule update --public-network -n {signalr_name} -g {rg} --allow RESTAPI', checks=[
-            self.check('')
+            self.check('networkAcLs.publicNetwork.allow[0]', 'RESTAPI'),
+            self.check('length(networkAcLs.publicNetwork.deny)', 0),
         ])
 
+        # Test list network rules
+        n_r = self.cmd('signalr network-rule list -n {signalr_name} -g {rg}', checks=[
+            self.check('length(networkAcLs.privateEndpoints)', 1),            
+        ])
 
+        self.kwargs.update({
+            'connection_name': n_r['privateEndpoints'][0]['name']
+        })
+
+        # Test update private network rules
+        self.cmd('signalr network-rule update --connection-name {connection_name} -n {signalr_name} -g {rg} --allow RESTAPI', checks=[
+            self.check('networkAcLs.privateEndpoints[0].allow[0]', 'RESTAPI'),
+            self.check('length(networkAcLs.privateEndpoints[0].deny)', 0),
+        ])

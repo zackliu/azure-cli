@@ -23,14 +23,13 @@ from ._constants import (
     SIGNALR_KEY_TYPE,
     SIGNALR_SERVICE_MODE_TYPE
 )
-from azure.mgmt.signalr.models import (SignalRRequestType)
+from azure.mgmt.signalr.models import SignalRRequestType
 
-from azure.cli.core import AzCommandsLoader
 
 logger = get_logger(__name__)
 
 
-def load_arguments(self: AzCommandsLoader, _):
+def load_arguments(self, _):
     with self.argument_context('signalr') as c:
         c.argument('resource_group_name', arg_type=resource_group_name_type)
         c.argument('location',

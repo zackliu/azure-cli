@@ -11,10 +11,9 @@ from ._client_factory import (
     cf_signalr,
     cf_private_endpoint_connections,
     cf_private_link_resources)
-from azure.cli.core import AzCommandsLoader
 
 
-def load_command_table(self: AzCommandsLoader, _):
+def load_command_table(self, _):
 
     signalr_custom_utils = CliCommandType(
         operations_tmpl='azure.cli.command_modules.signalr.custom#{}',

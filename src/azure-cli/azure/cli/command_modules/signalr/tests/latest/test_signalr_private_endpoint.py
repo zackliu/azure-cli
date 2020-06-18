@@ -32,23 +32,23 @@ class AzureSignalRServicePrivateEndpointScenarioTest(ScenarioTest):
                      self.check('location', '{location}'),
                      self.check('provisioningState', 'Succeeded'),
                      self.check('sku.name', '{sku}')
-                 ])
+                 ]).get_output_in_json()
 
         # Prepare network
         self.cmd('network vnet create -g {rg} -n {vnet} -l {location} --subnet-name {subnet}')
-        self.cmd('network vnet subnet update --name {subnet} --resource-group {rg} --vnet-name {vent} --disable-private-endpoint-network-policies true')
+        self.cmd('network vnet subnet update --name {subnet} --resource-group {rg} --vnet-name {vnet} --disable-private-endpoint-network-policies true')
         
         self.kwargs.update({
             'signalr_id': signalr['id']
         })
 
         # Create a private endpoint connection
-        p_e = self.cmd('network private-endpoint create --resource-group {rg} --vnet-name {vent} --subnet {subnet} --name {private_endpoint}  --private-connection-resource-id {signalr_id} --group-ids signalr --connection-name {private_endpoint_connection} --location {location} --manual-request')
+        p_e = self.cmd('network private-endpoint create --resource-group {rg} --vnet-name {vnet} --subnet {subnet} --name {private_endpoint}  --private-connection-resource-id {signalr_id} --group-ids signalr --connection-name {private_endpoint_connection} --location {location} --manual-request').get_output_in_json()
 
         # Test private link resource list
         p_e_c = self.cmd('signalr private-link-resource list -n {signalr_name} -g {rg}', checks=[
             self.check('length(@)', 1)
-        ])
+        ]).get_output_in_json()
 
         self.kwargs.update({
             'private_endpoint_connection_id': p_e_c[0]['id']
@@ -62,8 +62,8 @@ class AzureSignalRServicePrivateEndpointScenarioTest(ScenarioTest):
 
         # Test list network rules
         n_r = self.cmd('signalr network-rule list -n {signalr_name} -g {rg}', checks=[
-            self.check('length(networkAcLs.privateEndpoints)', 1),            
-        ])
+            self.check('length(privateEndpoints)', 1)        
+        ]).get_output_in_json()
 
         self.kwargs.update({
             'connection_name': n_r['privateEndpoints'][0]['name']
